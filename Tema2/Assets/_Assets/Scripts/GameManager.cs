@@ -10,6 +10,10 @@ public class GameManager : MonoBehaviour
     public TextMeshPro scoreText;
     private int score = 0;
 
+    private int currentScore = 0;
+    private float currentTime = 0;
+    private float scoreWindow = 2.0f;
+
     void Awake()
     {
         if (instance == null)
@@ -18,7 +22,25 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
     }
 
+    void Update()
+    {
+        if (Time.time - currentTime > scoreWindow)
+        {
+            AddScore(currentScore);
+            currentScore = 0;
+        }
+    }
+
     public void UpdateScore(int points)
+    {
+		if(currentScore == 0)
+		{
+        	currentScore = points;
+        	currentTime = Time.time;
+		}
+    }
+
+    void AddScore(int points)
     {
         score += points;
         scoreText.text = score.ToString();
