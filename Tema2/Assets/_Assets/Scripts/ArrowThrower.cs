@@ -61,42 +61,50 @@ public class ArrowThrower : MonoBehaviour
         rb.useGravity = false;
         Arrow.transform.position = transform.position;
     }
-    
+
     private void Update()
     {
         if (thrown)
         {
             return;
         }
-        
+
         if (Input.GetKeyDown(KeyCode.G))
         {
-            // Raycast not necessary for VR controllers, use input directly
             startTime = Time.time;
+            startPos = Camera.main.transform.position;
         }
         else if (Input.GetKeyUp(KeyCode.G))
         {
+            endPos = Camera.main.transform.position;
             endTime = Time.time;
-            swipeDistance = Vector3.Distance(newPosition, transform.position);
+
+            // Calculate swipeDistance using startPos and endPos
+            swipeDistance = Vector3.Distance(endPos, startPos);
+
             swipeTime = endTime - startTime;
-            
+
             if (swipeTime < 1f && swipeDistance > 0.3f) // Adjust these thresholds as needed
             {
                 //throw arrow
                 CalSpeed();
                 CalAngle();
-                rb.AddForce(new Vector3((angle.x * ArrowSpeed), (angle.y * ArrowSpeed / 3), (angle.z * ArrowSpeed) * 2));
+                rb.AddForce(new Vector3((angle.x * ArrowSpeed), (angle.y * ArrowSpeed / 3),
+                    (angle.z * ArrowSpeed) * 2));
                 rb.useGravity = true;
                 rb.isKinematic = false;
                 thrown = true;
                 rb.mass = 2f;
-                Invoke("ResetArrow", 2f);
+                //Invoke("ResetArrow", 6f);
             }
-            else
-                ResetArrow();
+        }
+        else if (Input.GetKeyDown(KeyCode.Space))
+        {
+            ResetArrow();
         }
     }
-    
+
+
     private void CalAngle()
     {
         angle = Camera.main.ScreenToWorldPoint(new Vector3(endPos.x, endPos.y + 50f, (Camera.main.nearClipPlane + 5)));
@@ -118,29 +126,44 @@ public class ArrowThrower : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        int distance = CalculateDistance();
         if(other.gameObject.tag == "0")
         { 
-            GameManager.instance.UpdateScore(0);
+            GameManager.instance.UpdateScore(0, distance);
         }
         
         else if(other.gameObject.tag == "5")
         { 
-            GameManager.instance.UpdateScore(5);
+            GameManager.instance.UpdateScore(5, distance);
         }
         
         else if(other.gameObject.tag == "15")
         { 
-            GameManager.instance.UpdateScore(15);
+            GameManager.instance.UpdateScore(15, distance);
         }
         
         else if(other.gameObject.tag == "30")
         { 
-            GameManager.instance.UpdateScore(30);
+            GameManager.instance.UpdateScore(30, distance);
         }
         
         else if(other.gameObject.tag == "50")
         { 
-            GameManager.instance.UpdateScore(50);
+            GameManager.instance.UpdateScore(50, distance);
         }
+    }
+    
+    private int CalculateDistance()
+    {
+        // Assuming you have a reference point in your environment
+        Vector3 referencePoint = new Vector3(0, 0, 0); // Adjust this as needed
+
+        // Calculate the distance based on the position of the Camera
+        float distance = Vector3.Distance(Camera.main.transform.position, referencePoint);
+
+        // Convert the distance to an integer (you may need to adjust the conversion factor)
+        int distanceInMeters = Mathf.RoundToInt(distance * 100); // Assuming 1 unit in Unity = 1 meter
+
+        return distanceInMeters;
     }
 }
