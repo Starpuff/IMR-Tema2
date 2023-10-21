@@ -19,7 +19,6 @@ public class ArrowThrower : MonoBehaviour
     private bool thrown;
     private Vector3 newPosition;
     
-    private float smooth = 0.7f;
     Rigidbody rb;
     
     // Start is called before the first frame update
@@ -30,11 +29,20 @@ public class ArrowThrower : MonoBehaviour
 
     private void SetupArrow()
     {
-        GameObject arrow = GameObject.FindGameObjectsWithTag("Player")[0];
-        Arrow = arrow;
+        GameObject[] arrows = GameObject.FindGameObjectsWithTag("Player");
+
+        foreach (var arrow in arrows)
+        {
+            if(arrow == null)
+                continue;
+            else
+            {
+                Arrow = arrow;
+                break;
+            }
+        }
         
-        rb = arrow.GetComponent<Rigidbody>();
-        rb.mass = 1.2f;
+        rb = Arrow.GetComponent<Rigidbody>();
         ResetArrow();
     }
 
@@ -72,7 +80,7 @@ public class ArrowThrower : MonoBehaviour
             swipeDistance = Vector3.Distance(newPosition, transform.position);
             swipeTime = endTime - startTime;
             
-            if (swipeTime < 0.5f && swipeDistance > 0.3f) // Adjust these thresholds as needed
+            if (swipeTime < 1f && swipeDistance > 0.3f) // Adjust these thresholds as needed
             {
                 //throw arrow
                 CalSpeed();
@@ -81,7 +89,8 @@ public class ArrowThrower : MonoBehaviour
                 rb.useGravity = true;
                 rb.isKinematic = false;
                 thrown = true;
-                Invoke("ResetArrow", 4f);
+                rb.mass = 2f;
+                Invoke("ResetArrow", 2f);
             }
             else
                 ResetArrow();
@@ -105,5 +114,33 @@ public class ArrowThrower : MonoBehaviour
             ArrowSpeed = MaxArrowSpeed;
         }
         swipeTime = 0;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if(other.gameObject.tag == "0")
+        { 
+            GameManager.instance.UpdateScore(0);
+        }
+        
+        else if(other.gameObject.tag == "5")
+        { 
+            GameManager.instance.UpdateScore(5);
+        }
+        
+        else if(other.gameObject.tag == "15")
+        { 
+            GameManager.instance.UpdateScore(15);
+        }
+        
+        else if(other.gameObject.tag == "30")
+        { 
+            GameManager.instance.UpdateScore(30);
+        }
+        
+        else if(other.gameObject.tag == "50")
+        { 
+            GameManager.instance.UpdateScore(50);
+        }
     }
 }
